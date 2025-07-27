@@ -24,11 +24,12 @@ def parse_spanish_date(date_str):
         return pd.NaT # Retorna Not a Time para valores nulos o no-string
 
     original_date_str = date_str # Guardar la cadena original para depuración
-    date_str = original_date_str.strip().lower() # Limpiar espacios y convertir a minúsculas
+    # Asegurarse de que la cadena se limpia y se convierte a minúsculas para la lógica de parseo
+    cleaned_date_str = original_date_str.strip().lower()
 
-    parts = date_str.split('-')
+    parts = cleaned_date_str.split('-')
     if len(parts) != 2:
-        print(f"DEBUG: Formato incorrecto, no se pudo dividir por '-': '{original_date_str}'") # DEBUG PRINT
+        print(f"DEBUG: Formato incorrecto, no se pudo dividir por '-': '{original_date_str}' (limpio: '{cleaned_date_str}')") # DEBUG PRINT
         return pd.NaT # Formato incorrecto
 
     month_abbr = parts[0]
@@ -36,7 +37,7 @@ def parse_spanish_date(date_str):
 
     month_num = spanish_month_map.get(month_abbr)
     if month_num is None:
-        print(f"DEBUG: Mes no reconocido: '{month_abbr}' en '{original_date_str}'") # DEBUG PRINT
+        print(f"DEBUG: Mes no reconocido: '{month_abbr}' en '{original_date_str}' (limpio: '{cleaned_date_str}')") # DEBUG PRINT
         return pd.NaT # Mes no reconocido
 
     try:
@@ -45,10 +46,10 @@ def parse_spanish_date(date_str):
         full_year = 2000 + int(year_short)
         return datetime(full_year, month_num, 1)
     except ValueError as e:
-        print(f"DEBUG: Error de ValueError al convertir fecha '{original_date_str}': {e}") # DEBUG PRINT
+        print(f"DEBUG: Error de ValueError al convertir fecha '{original_date_str}' (limpio: '{cleaned_date_str}'): {e}") # DEBUG PRINT
         return pd.NaT # Error en la conversión del año o fecha inválida
     except Exception as e:
-        print(f"DEBUG: Error inesperado al convertir fecha '{original_date_str}': {e}") # DEBUG PRINT
+        print(f"DEBUG: Error inesperado al convertir fecha '{original_date_str}' (limpio: '{cleaned_date_str}'): {e}") # DEBUG PRINT
         return pd.NaT
 
 
@@ -367,8 +368,6 @@ st.altair_chart(chart10, use_container_width=True)
 
 st.markdown("---")
 st.success("¡Sube tu archivo de Excel para visualizar los datos!")
-
-
 
 
 
