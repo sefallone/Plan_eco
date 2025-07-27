@@ -3,6 +3,7 @@ import pandas as pd
 import altair as alt
 from datetime import datetime, timedelta
 import numpy as np
+import locale # Importar el módulo locale
 
 # --- 1. Carga y Preparación de Datos ---
 # Función para cargar datos directamente desde un archivo de Excel
@@ -16,8 +17,17 @@ def load_data_from_excel(uploaded_file):
             df.columns = df.columns.str.strip()
 
             # Convertir 'Fecha' a objetos datetime, manejando errores y eliminando espacios
-            # Asegúrate de que el formato '%b-%y' (ej. 'oct-25') es el correcto para tus fechas
             if 'Fecha' in df.columns:
+                # Establecer la configuración regional a español para que pd.to_datetime reconozca los nombres de los meses
+                try:
+                    locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
+                except locale.Error:
+                    # Fallback para sistemas donde 'es_ES.UTF-8' no está disponible
+                    locale.setlocale(locale.LC_TIME, 'es_ES')
+                except Exception as e:
+                    st.warning(f"Advertencia: No se pudo establecer la configuración regional para fechas: {e}. "
+                               "Esto podría afectar la interpretación de los nombres de meses en español.")
+
                 df['Fecha'] = df['Fecha'].astype(str).apply(lambda x: x.strip()) # Asegurar que es string y limpiar espacios
                 df['Fecha'] = pd.to_datetime(df['Fecha'], format='%b-%y', errors='coerce')
 
@@ -36,10 +46,10 @@ def load_data_from_excel(uploaded_file):
             
             # Asegúrate de que todas las columnas necesarias para los cálculos existan
             required_cols = [
-                'Facturación CCEE VITHAS', 'Facturación CCEE OSA (80%)',
+                'Total Facturación', 'Facturación CCEE VITHAS', 'Facturación CCEE OSA (80%)',
                 'Facturación Quirúrgico VITHAS', 'Facturación Quirúrgico OSA (90%)',
                 'Facturación Urgencias OSA (50% )', 'Facturación Urgencias VITHAS',
-                'Total Facturación', 'No. De Pacientes CCEE', 'No. De Intervenciones Quirúrgicas',
+                'No. De Pacientes CCEE', 'No. De Intervenciones Quirúrgicas',
                 'No. Urgencias Mes', 'Precio Medio Consultas CCEE', 'Precio Medio Urgencias',
                 'Pacientes x Módulo (Cada 15 min)', 'Días x mes CCEE', 'Días x Mes Urgencias',
                 'Módulos Totales x día', 'Módulos Mañana', 'Módulos Tarde',
