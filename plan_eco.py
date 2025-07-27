@@ -149,9 +149,16 @@ def load_data():
     }
     df = pd.DataFrame(data)
     
-    # Convert 'Fecha' to datetime objects
-    df['Fecha'] = pd.to_datetime(df['Fecha'], format='%b-%y')
+    # Convert 'Fecha' to datetime objects with error handling and stripping spaces
+    df['Fecha'] = df['Fecha'].apply(lambda x: x.strip()) # Remove leading/trailing spaces
+    df['Fecha'] = pd.to_datetime(df['Fecha'], format='%b-%y', errors='coerce')
 
+    # Check for any dates that failed to parse
+    if df['Fecha'].isnull().any():
+        st.warning("Advertencia: Algunas fechas en el archivo de datos no pudieron ser convertidas. "
+                   "Por favor, revisa el formato de la columna 'Fecha' en tu Excel. "
+                   "Las filas afectadas pueden no aparecer en los gráficos.")
+    
     # Calcular columnas derivadas necesarias para KPIs y gráficos
     df['Total Facturación CCEE'] = df['Facturación CCEE VITHAS'] + df['Facturación CCEE OSA (80%)']
     df['Total Facturación Quirúrgico'] = df['Facturación Quirúrgico VITHAS'] + df['Facturación Quirúrgico OSA (90%)']
@@ -391,4 +398,5 @@ st.altair_chart(chart10, use_container_width=True)
 
 st.markdown("---")
 st.success("¡Dashboard actualizado con los datos proporcionados!")
+
 
