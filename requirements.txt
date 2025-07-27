@@ -3,4 +3,5 @@ pandas
 altair
 datetime
 numpy
+plotly
 openpyxl
