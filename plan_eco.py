@@ -54,7 +54,7 @@ urgencias_mes = df_filtered["No. Urgencias Mes"].sum()
 precio_medio_consultas = df_filtered["Precio Medio Consultas CCEE"].mean()
 precio_medio_quirurgico = df_filtered["Precio Medio HHMM Quirúrgicas"].mean()
 crecimiento_anual = ((df[df['Año'] == selected_year]["Total Facturación"].sum() / 
-                     df[df['Año'] == (selected_year - 1)]["Total Facturación"].sum() - 1) * 100
+                     df[df['Año'] == (selected_year - 1)]["Total Facturación"].sum() - 1)) * 100
 
 # Mostramos los KPIs en columnas
 col1, col2, col3 = st.columns(3)
