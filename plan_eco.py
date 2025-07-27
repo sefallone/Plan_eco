@@ -38,14 +38,27 @@ def load_data_from_excel(uploaded_file):
             required_cols = [
                 'Facturación CCEE VITHAS', 'Facturación CCEE OSA (80%)',
                 'Facturación Quirúrgico VITHAS', 'Facturación Quirúrgico OSA (90%)',
-                'Facturación Urgencias OSA (50% )', 'Facturación Urgencias VITHAS'
+                'Facturación Urgencias OSA (50% )', 'Facturación Urgencias VITHAS',
+                'Total Facturación', 'No. De Pacientes CCEE', 'No. De Intervenciones Quirúrgicas',
+                'No. Urgencias Mes', 'Precio Medio Consultas CCEE', 'Precio Medio Urgencias',
+                'Pacientes x Módulo (Cada 15 min)', 'Días x mes CCEE', 'Días x Mes Urgencias',
+                'Módulos Totales x día', 'Módulos Mañana', 'Módulos Tarde',
+                'Precio HHMM 80% Consultas', 'Precio Medio HHMM Quirúrgicas',
+                'Urgencias días Trauma (15%)', 'Urgencias días totales Vitha'
             ]
             
             for col in required_cols:
                 if col not in df.columns:
                     st.warning(f"Advertencia: La columna '{col}' no se encontró en el archivo de Excel. "
-                               "Algunos cálculos y gráficos pueden verse afectados.")
+                               "Algunos cálculos y gráficos pueden verse afectados. Se usará 0 como valor por defecto.")
                     df[col] = 0 # Añade la columna con ceros si no existe para evitar errores
+                # Intentar convertir a tipo numérico, forzando errores a NaN
+                try:
+                    df[col] = pd.to_numeric(df[col], errors='coerce')
+                except Exception:
+                    # Si no se puede convertir a numérico, no hacer nada o loggear
+                    pass
+
 
             df['Total Facturación CCEE'] = df['Facturación CCEE VITHAS'] + df['Facturación CCEE OSA (80%)']
             df['Total Facturación Quirúrgico'] = df['Facturación Quirúrgico VITHAS'] + df['Facturación Quirúrgico OSA (90%)']
