@@ -19,14 +19,22 @@ def load_data_from_excel(uploaded_file):
             # Convertir 'Fecha' a objetos datetime, manejando errores y eliminando espacios
             if 'Fecha' in df.columns:
                 # Establecer la configuración regional a español para que pd.to_datetime reconozca los nombres de los meses
+                # Intentar varias opciones de locale para mayor compatibilidad
                 try:
                     locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
                 except locale.Error:
-                    # Fallback para sistemas donde 'es_ES.UTF-8' no está disponible
-                    locale.setlocale(locale.LC_TIME, 'es_ES')
+                    try:
+                        locale.setlocale(locale.LC_TIME, 'es_ES')
+                    except locale.Error:
+                        st.warning("Advertencia: No se pudo establecer la configuración regional 'es_ES.UTF-8' ni 'es_ES'. "
+                                   "Se usará la configuración regional por defecto del sistema. Esto podría afectar "
+                                   "la interpretación de los nombres de meses en español si no está configurada.")
+                        locale.setlocale(locale.LC_TIME, '') # Reset to default locale
                 except Exception as e:
-                    st.warning(f"Advertencia: No se pudo establecer la configuración regional para fechas: {e}. "
+                    st.warning(f"Advertencia: Error inesperado al establecer la configuración regional para fechas: {e}. "
                                "Esto podría afectar la interpretación de los nombres de meses en español.")
+                    locale.setlocale(locale.LC_TIME, '') # Reset to default locale
+
 
                 df['Fecha'] = df['Fecha'].astype(str).apply(lambda x: x.strip()) # Asegurar que es string y limpiar espacios
                 df['Fecha'] = pd.to_datetime(df['Fecha'], format='%b-%y', errors='coerce')
@@ -327,6 +335,7 @@ st.altair_chart(chart10, use_container_width=True)
 
 st.markdown("---")
 st.success("¡Sube tu archivo de Excel para visualizar los datos!")
+
 
 
 
