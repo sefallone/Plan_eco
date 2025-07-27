@@ -3,9 +3,47 @@ import pandas as pd
 import altair as alt
 from datetime import datetime, timedelta
 import numpy as np
-import locale # Importar el módulo locale
+# import locale # Ya no es necesario
 
 # --- 1. Carga y Preparación de Datos ---
+# Mapeo manual de meses en español a números para una conversión robusta
+spanish_month_map = {
+    'ene': 1, 'feb': 2, 'mar': 3, 'abr': 4, 'may': 5, 'jun': 6,
+    'jul': 7, 'ago': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dic': 12,
+    'enero': 1, 'febrero': 2, 'marzo': 3, 'abril': 4, 'mayo': 5, 'junio': 6,
+    'julio': 7, 'agosto': 8, 'septiembre': 9, 'octubre': 10, 'noviembre': 11, 'diciembre': 12
+}
+
+def parse_spanish_date(date_str):
+    """
+    Parsea una cadena de fecha en formato 'mes-YY' (ej. 'marzo-25') a un objeto datetime.
+    Utiliza un mapeo manual para los nombres de meses en español.
+    """
+    if pd.isna(date_str) or not isinstance(date_str, str):
+        return pd.NaT # Retorna Not a Time para valores nulos o no-string
+
+    date_str = date_str.strip().lower() # Limpiar espacios y convertir a minúsculas
+
+    parts = date_str.split('-')
+    if len(parts) != 2:
+        return pd.NaT # Formato incorrecto
+
+    month_abbr = parts[0]
+    year_short = parts[1]
+
+    month_num = spanish_month_map.get(month_abbr)
+    if month_num is None:
+        return pd.NaT # Mes no reconocido
+
+    try:
+        # Reconstruir la fecha en un formato que pd.to_datetime entienda fácilmente (YYYY-MM-DD)
+        # Asumimos que los años 'YY' son del siglo 21 (20YY)
+        full_year = 2000 + int(year_short)
+        return datetime(full_year, month_num, 1)
+    except ValueError:
+        return pd.NaT # Error en la conversión del año o fecha inválida
+
+
 # Función para cargar datos directamente desde un archivo de Excel
 def load_data_from_excel(uploaded_file):
     if uploaded_file is not None:
@@ -16,28 +54,9 @@ def load_data_from_excel(uploaded_file):
             # Limpiar espacios en blanco de los nombres de columna si existen
             df.columns = df.columns.str.strip()
 
-            # Convertir 'Fecha' a objetos datetime, manejando errores y eliminando espacios
+            # Convertir 'Fecha' a objetos datetime usando la función personalizada
             if 'Fecha' in df.columns:
-                # Establecer la configuración regional a español para que pd.to_datetime reconozca los nombres de los meses
-                # Intentar varias opciones de locale para mayor compatibilidad
-                try:
-                    locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
-                except locale.Error:
-                    try:
-                        locale.setlocale(locale.LC_TIME, 'es_ES')
-                    except locale.Error:
-                        st.warning("Advertencia: No se pudo establecer la configuración regional 'es_ES.UTF-8' ni 'es_ES'. "
-                                   "Se usará la configuración regional por defecto del sistema. Esto podría afectar "
-                                   "la interpretación de los nombres de meses en español si no está configurada.")
-                        locale.setlocale(locale.LC_TIME, '') # Reset to default locale
-                except Exception as e:
-                    st.warning(f"Advertencia: Error inesperado al establecer la configuración regional para fechas: {e}. "
-                               "Esto podría afectar la interpretación de los nombres de meses en español.")
-                    locale.setlocale(locale.LC_TIME, '') # Reset to default locale
-
-
-                df['Fecha'] = df['Fecha'].astype(str).apply(lambda x: x.strip()) # Asegurar que es string y limpiar espacios
-                df['Fecha'] = pd.to_datetime(df['Fecha'], format='%b-%y', errors='coerce')
+                df['Fecha'] = df['Fecha'].apply(parse_spanish_date)
 
                 # Verificar si hay fechas que fallaron en la conversión
                 if df['Fecha'].isnull().any():
@@ -335,6 +354,7 @@ st.altair_chart(chart10, use_container_width=True)
 
 st.markdown("---")
 st.success("¡Sube tu archivo de Excel para visualizar los datos!")
+
 
 
 
