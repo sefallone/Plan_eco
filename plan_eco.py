@@ -5,171 +5,61 @@ from datetime import datetime, timedelta
 import numpy as np
 
 # --- 1. Carga y Preparación de Datos ---
-# Datos reales transcritos de las imágenes del archivo de Excel (Oct 2025 - Dic 2027).
-def load_data():
-    data = {
-        'Fecha': [
-            'oct-25', 'nov-25', 'dic-25', 'ene-26', 'feb-26', 'mar-26', 'abr-26', 'may-26', 
-            'jun-26', 'jul-26', 'ago-26', 'sep-26', 'oct-26', 'nov-26', 'dic-26',
-            'ene-27', 'feb-27', 'mar-27', 'abr-27', 'may-27', 'jun-27',
-            'jul-27', 'ago-27', 'sep-27', 'oct-27', 'nov-27', 'dic-27'
-        ],
-        'Total Facturación': [
-            100000, 120000, 140000, 200000, 210000, 210000, 260000, 260000,
-            360000, 360000, 360000, 370000, 370000, 370000, 380000,
-            390000, 400000, 410000, 420000, 430000, 440000,
-            450000, 460000, 470000, 480000, 490000, 500000
-        ],
-        'Facturación CCEE VITHAS': [
-            10000, 12000, 14000, 20000, 21000, 21000, 26000, 26000,
-            36000, 36000, 36000, 37000, 37000, 37000, 38000,
-            39000, 40000, 41000, 42000, 43000, 44000,
-            45000, 46000, 47000, 48000, 49000, 50000
-        ],
-        'Facturación CCEE OSA (80%)': [
-            8000, 9600, 11200, 16000, 16800, 16800, 20800, 20800,
-            28800, 28800, 28800, 29600, 29600, 29600, 30400,
-            31200, 32000, 32800, 33600, 34400, 35200,
-            36000, 36800, 37600, 38400, 39200, 40000
-        ],
-        'No. De Pacientes CCEE': [
-            500, 600, 700, 1000, 1050, 1050, 1300, 1300,
-            1800, 1800, 1800, 1850, 1850, 1850, 1900,
-            1950, 2000, 2050, 2100, 2150, 2200,
-            2250, 2300, 2350, 2400, 2450, 2500
-        ],
-        'Pacientes x Módulo (Cada 15 min)': [
-            2.00, 2.00, 2.00, 2.00, 2.00, 2.00, 2.00, 2.00,
-            2.00, 2.00, 2.00, 2.00, 2.00, 2.00, 2.00,
-            2.10, 2.10, 2.10, 2.10, 2.10, 2.10,
-            2.10, 2.10, 2.10, 2.10, 2.10, 2.10
-        ],
-        'Días x mes CCEE': [
-            20, 20, 20, 20, 20, 20, 20, 20,
-            20, 20, 20, 20, 20, 20, 20,
-            21, 21, 21, 21, 21, 21,
-            21, 21, 21, 21, 21, 21
-        ],
-        'Módulos Totales x día': [
-            1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 4.00, 4.00,
-            4.00, 4.00, 4.00, 4.00, 4.00, 4.00, 4.00,
-            5.00, 5.00, 5.00, 5.00, 5.00, 5.00,
-            5.00, 5.00, 5.00, 5.00, 5.00, 5.00
-        ],
-        'Módulos Mañana': [
-            1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 2.00, 2.00,
-            2.00, 2.00, 2.00, 2.00, 2.00, 2.00, 2.00,
-            2.50, 2.50, 2.50, 2.50, 2.50, 2.50,
-            2.50, 2.50, 2.50, 2.50, 2.50, 2.50
-        ],
-        'Módulos Tarde': [
-            1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 2.00, 2.00,
-            2.00, 2.00, 2.00, 2.00, 2.00, 2.00, 2.00,
-            2.50, 2.50, 2.50, 2.50, 2.50, 2.50,
-            2.50, 2.50, 2.50, 2.50, 2.50, 2.50
-        ],
-        'Precio Medio Consultas CCEE': [
-            20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00,
-            20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00,
-            21.00, 21.00, 21.00, 21.00, 21.00, 21.00,
-            21.00, 21.00, 21.00, 21.00, 21.00, 21.00
-        ],
-        'Precio HHMM 80% Consultas': [
-            20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00,
-            20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00,
-            21.00, 21.00, 21.00, 21.00, 21.00, 21.00,
-            21.00, 21.00, 21.00, 21.00, 21.00, 21.00
-        ],
-        'Facturación Quirúrgico VITHAS': [
-            20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00,
-            20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00,
-            50.00, 50.00, 50.00, 50.00, 50.00, 50.00,
-            50.00, 50.00, 50.00, 50.00, 50.00, 50.00
-        ],
-        'Facturación Quirúrgico OSA (90%)': [
-            20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00,
-            20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00,
-            45.00, 45.00, 45.00, 45.00, 45.00, 45.00,
-            45.00, 45.00, 45.00, 45.00, 45.00, 45.00
-        ],
-        'No. De Intervenciones Quirúrgicas': [
-            20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00,
-            20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00,
-            50.00, 50.00, 50.00, 50.00, 50.00, 50.00,
-            50.00, 50.00, 50.00, 50.00, 50.00, 50.00
-        ],
-        'Precio Medio HHMM Quirúrgicas': [
-            20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00,
-            20.00, 20.00, 20.00, 20.00, 20.00, 20.00, 20.00,
-            50.00, 50.00, 50.00, 50.00, 50.00, 50.00,
-            50.00, 50.00, 50.00, 50.00, 50.00, 50.00
-        ],
-        'Facturación Urgencias OSA (50% )': [
-            17500, 17500, 17500, 17500, 17500, 17500, 17500, 17500,
-            17500, 17500, 17500, 17500, 17500, 17500, 17500,
-            18000, 18000, 18000, 18000, 18000, 18000,
-            18000, 18000, 18000, 18000, 18000, 18000
-        ],
-        'Facturación Urgencias VITHAS': [
-            8750, 8750, 8750, 8750, 8750, 8750, 8750, 8750,
-            8750, 8750, 8750, 8750, 8750, 8750, 8750,
-            9000, 9000, 9000, 9000, 9000, 9000,
-            9000, 9000, 9000, 9000, 9000, 9000
-        ],
-        'No. Urgencias Mes': [
-            300, 300, 300, 300, 300, 300, 300, 300,
-            300, 300, 300, 300, 300, 300, 300,
-            350, 350, 350, 350, 350, 350,
-            350, 350, 350, 350, 350, 350
-        ],
-        'Días x Mes Urgencias': [
-            30, 30, 30, 30, 30, 30, 30, 30,
-            30, 30, 30, 30, 30, 30, 30,
-            30, 30, 30, 30, 30, 30,
-            30, 30, 30, 30, 30, 30
-        ],
-        'Urgencias días Trauma (15%)': [
-            3.00, 3.00, 3.00, 3.00, 3.00, 3.00, 3.00, 3.00,
-            3.00, 3.00, 3.00, 3.00, 3.00, 3.00, 3.00,
-            3.50, 3.50, 3.50, 3.50, 3.50, 3.50,
-            3.50, 3.50, 3.50, 3.50, 3.50, 3.50
-        ],
-        'Urgencias días totales Vitha': [
-            5.00, 5.00, 5.00, 5.00, 5.00, 5.00, 5.00, 5.00,
-            5.00, 5.00, 5.00, 5.00, 5.00, 5.00, 5.00,
-            6.00, 6.00, 6.00, 6.00, 6.00, 6.00,
-            6.00, 6.00, 6.00, 6.00, 6.00, 6.00
-        ],
-        'Precio Medio Urgencias': [
-            60.00, 60.00, 60.00, 60.00, 60.00, 60.00, 60.00, 60.00,
-            60.00, 60.00, 60.00, 60.00, 60.00, 60.00, 60.00,
-            65.00, 65.00, 65.00, 65.00, 65.00, 65.00,
-            65.00, 65.00, 65.00, 65.00, 65.00, 65.00
-        ]
-    }
-    df = pd.DataFrame(data)
-    
-    # Convert 'Fecha' to datetime objects with error handling and stripping spaces
-    df['Fecha'] = df['Fecha'].apply(lambda x: x.strip()) # Remove leading/trailing spaces
-    df['Fecha'] = pd.to_datetime(df['Fecha'], format='%b-%y', errors='coerce')
+# Función para cargar datos directamente desde un archivo de Excel
+def load_data_from_excel(uploaded_file):
+    if uploaded_file is not None:
+        try:
+            # Leer el archivo de Excel en un DataFrame de pandas
+            df = pd.read_excel(uploaded_file)
+            
+            # Limpiar espacios en blanco de los nombres de columna si existen
+            df.columns = df.columns.str.strip()
 
-    # Check for any dates that failed to parse
-    if df['Fecha'].isnull().any():
-        st.warning("Advertencia: Algunas fechas en el archivo de datos no pudieron ser convertidas. "
-                   "Por favor, revisa el formato de la columna 'Fecha' en tu Excel. "
-                   "Las filas afectadas pueden no aparecer en los gráficos.")
-    
-    # Calcular columnas derivadas necesarias para KPIs y gráficos
-    df['Total Facturación CCEE'] = df['Facturación CCEE VITHAS'] + df['Facturación CCEE OSA (80%)']
-    df['Total Facturación Quirúrgico'] = df['Facturación Quirúrgico VITHAS'] + df['Facturación Quirúrgico OSA (90%)']
-    df['Total Facturación Urgencias'] = df['Facturación Urgencias OSA (50% )'] + df['Facturación Urgencias VITHAS']
-    
-    # Suma de todas las facturaciones por tipo para un "Total Ingresos" más general si se desea
-    df['Total Ingresos General'] = df['Total Facturación CCEE'] + df['Total Facturación Quirúrgico'] + df['Total Facturación Urgencias']
-    
-    return df
+            # Convertir 'Fecha' a objetos datetime, manejando errores y eliminando espacios
+            # Asegúrate de que el formato '%b-%y' (ej. 'oct-25') es el correcto para tus fechas
+            if 'Fecha' in df.columns:
+                df['Fecha'] = df['Fecha'].astype(str).apply(lambda x: x.strip()) # Asegurar que es string y limpiar espacios
+                df['Fecha'] = pd.to_datetime(df['Fecha'], format='%b-%y', errors='coerce')
 
-df = load_data()
+                # Verificar si hay fechas que fallaron en la conversión
+                if df['Fecha'].isnull().any():
+                    st.warning("Advertencia: Algunas fechas en el archivo de Excel no pudieron ser convertidas. "
+                               "Por favor, revisa el formato de la columna 'Fecha' en tu archivo. "
+                               "Las filas afectadas pueden no aparecer en los gráficos.")
+            else:
+                st.error("Error: La columna 'Fecha' no se encontró en el archivo de Excel.")
+                return pd.DataFrame() # Retorna un DataFrame vacío si falta la columna clave
+
+            # Calcular columnas derivadas necesarias para KPIs y gráficos
+            # Se asume que estas columnas existen en el Excel o se pueden derivar
+            # Añade validaciones o un valor por defecto si alguna columna esperada no existe
+            
+            # Asegúrate de que todas las columnas necesarias para los cálculos existan
+            required_cols = [
+                'Facturación CCEE VITHAS', 'Facturación CCEE OSA (80%)',
+                'Facturación Quirúrgico VITHAS', 'Facturación Quirúrgico OSA (90%)',
+                'Facturación Urgencias OSA (50% )', 'Facturación Urgencias VITHAS'
+            ]
+            
+            for col in required_cols:
+                if col not in df.columns:
+                    st.warning(f"Advertencia: La columna '{col}' no se encontró en el archivo de Excel. "
+                               "Algunos cálculos y gráficos pueden verse afectados.")
+                    df[col] = 0 # Añade la columna con ceros si no existe para evitar errores
+
+            df['Total Facturación CCEE'] = df['Facturación CCEE VITHAS'] + df['Facturación CCEE OSA (80%)']
+            df['Total Facturación Quirúrgico'] = df['Facturación Quirúrgico VITHAS'] + df['Facturación Quirúrgico OSA (90%)']
+            df['Total Facturación Urgencias'] = df['Facturación Urgencias OSA (50% )'] + df['Facturación Urgencias VITHAS']
+            
+            df['Total Ingresos General'] = df['Total Facturación CCEE'] + df['Total Facturación Quirúrgico'] + df['Total Facturación Urgencias']
+            
+            return df
+
+        except Exception as e:
+            st.error(f"Error al leer el archivo de Excel: {e}. Asegúrate de que el archivo es un formato Excel válido y las columnas son correctas.")
+            return pd.DataFrame() # Retorna un DataFrame vacío en caso de error
+    else:
+        return pd.DataFrame() # Retorna un DataFrame vacío si no hay archivo cargado
 
 # --- 2. Configuración de la Página Streamlit ---
 st.set_page_config(
@@ -181,20 +71,36 @@ st.set_page_config(
 st.title("📊 Dashboard: Análisis Financiero y Operacional")
 st.markdown("---")
 
-# --- 3. Filtros Globales ---
-st.sidebar.header("Filtros")
-selected_year = st.sidebar.selectbox("Seleccionar Año", options=sorted(df['Fecha'].dt.year.unique(), reverse=True))
+# --- 3. Filtros Globales y Carga de Archivo ---
+st.sidebar.header("Cargar Datos y Filtros")
+uploaded_file = st.sidebar.file_uploader("Sube tu archivo de Excel (.xlsx, .xls)", type=["xlsx", "xls"])
+
+df = load_data_from_excel(uploaded_file)
+
+if df.empty:
+    st.info("Por favor, sube un archivo de Excel para comenzar el análisis.")
+    st.stop() # Detiene la ejecución si no hay datos
+
+# Asegurarse de que 'Fecha' no tenga valores nulos después de la conversión
+df = df.dropna(subset=['Fecha'])
+
+# Filtro de año
+selected_year = st.sidebar.selectbox(
+    "Seleccionar Año", 
+    options=sorted(df['Fecha'].dt.year.unique(), reverse=True)
+)
 
 df_filtered = df[df['Fecha'].dt.year == selected_year]
 
 if df_filtered.empty:
-    st.warning(f"No hay datos disponibles para el año {selected_year}. Por favor, ajusta el archivo de datos o selecciona otro año.")
+    st.warning(f"No hay datos disponibles para el año {selected_year} después de aplicar los filtros. Por favor, revisa tu archivo o selecciona otro año.")
     st.stop()
 
 # --- 4. Definición y Visualización de KPIs (10 KPIs) ---
 st.header(f"📈 Resumen Anual ({selected_year})")
 
 # Calculando KPIs para el año filtrado
+# Se añaden .sum() o .mean() para asegurar que el cálculo se realiza sobre los datos filtrados
 kpis = {
     "Total Facturación General": df_filtered['Total Facturación'].sum(),
     "Facturación CCEE Total": df_filtered['Total Facturación CCEE'].sum(),
@@ -397,6 +303,7 @@ st.altair_chart(chart10, use_container_width=True)
 
 
 st.markdown("---")
-st.success("¡Dashboard actualizado con los datos proporcionados!")
+st.success("¡Sube tu archivo de Excel para visualizar los datos!")
+
 
 
